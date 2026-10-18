@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup Guide — ML/CS Academic Job Market Auto-Tracker</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.6; }
+  h1 { font-size: 1.5rem; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; }
+  h2 { font-size: 1.1rem; margin-top: 2rem; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  .step { background: #f9f9f9; border-left: 3px solid #1a1a1a; padding: 12px 16px; margin: 12px 0; }
+  .note { background: #fff8e1; border-left: 3px solid #f59e0b; padding: 10px 14px; margin: 12px 0; font-size: 0.92em; }
+  .done { color: #15803d; font-weight: 600; }
+  ol { padding-left: 1.4rem; }
+  li { margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>Setup Guide — ML/CS Academic Job Market Auto-Tracker</h1>
+<p>Three steps. Under 5 minutes.</p>
+
+<h2>What this tracker does</h2>
+<p>Every morning at 7 AM UTC, a Google Apps Script fetches new ML/CS faculty and postdoc listings from <strong>mathjobs.org</strong> and adds them to your <em>Job Board</em> sheet. You set your keywords once; the board builds itself.</p>
+
+<h2>Step 1 — Copy the script</h2>
+<div class="step">
+  <ol>
+    <li>In your Google Sheet, go to <strong>Extensions &gt; Apps Script</strong>.</li>
+    <li>Delete any placeholder code in the editor.</li>
+    <li>Open the file <code>tracker.gs</code> included with this download and paste the entire contents into the editor.</li>
+    <li>Click <strong>Save</strong> (Ctrl+S / Cmd+S). Name the project "Job Tracker" when prompted.</li>
+  </ol>
+</div>
+
+<h2>Step 2 — Authorize and run</h2>
+<div class="step">
+  <ol>
+    <li>In the Apps Script editor, select the function <code>setupTrigger</code> from the function dropdown (top center).</li>
+    <li>Click <strong>Run</strong> (▶). Google will ask for authorization — click "Review permissions", choose your Google account, then "Allow".</li>
+    <li>You should see: <em>"Daily trigger set: updateJobs runs every day at 7 AM UTC."</em> in the execution log at the bottom.</li>
+    <li>Now select <code>runNow</code> from the dropdown and click <strong>Run</strong> to fetch the first batch of jobs immediately.</li>
+  </ol>
+</div>
+
+<div class="note">
+  <strong>First run takes 10–30 seconds.</strong> If you see "Feed returned 404" for all feeds, mathjobs may have changed their RSS URL structure — see Troubleshooting below.
+</div>
+
+<h2>Step 3 — Customize your keywords</h2>
+<div class="step">
+  <p>In <code>tracker.gs</code>, find the <code>FEEDS</code> array at the top. Edit the <code>keywords=</code> parameter in each URL to match your target subfields.</p>
+  <p>Examples:</p>
+  <ul>
+    <li><code>keywords=medical+imaging</code></li>
+    <li><code>keywords=reinforcement+learning</code></li>
+    <li><code>keywords=computational+neuroscience</code></li>
+  </ul>
+  <p>Add or remove feed URLs as needed. Each keyword gets its own feed line.</p>
+</div>
+
+<p class="done">Done. Your Job Board updates itself every morning.</p>
+
+<h2>Sheet structure</h2>
+<p>The tracker expects a sheet named <strong>Job Board</strong> with these columns in order:</p>
+<table style="border-collapse:collapse; font-size:0.9em;">
+  <tr style="background:#f4f4f4">
+    <th style="padding:6px 12px; border:1px solid #ddd">A</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">B</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">C</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">D</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">E</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">F</th>
+    <th style="padding:6px 12px; border:1px solid #ddd">G</th>
+  </tr>
+  <tr>
+    <td style="padding:6px 12px; border:1px solid #ddd">Added</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">Title</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">Institution</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">Deadline</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">URL</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">Status</td>
+    <td style="padding:6px 12px; border:1px solid #ddd">Notes</td>
+  </tr>
+</table>
+<p>Row 1 must be the header row. The script appends new rows automatically and skips duplicates by URL.</p>
+
+<h2>Troubleshooting</h2>
+<p><strong>All feeds return 404 or empty</strong>: mathjobs has occasionally changed its RSS URL. Try visiting <code>mathjobs.org</code> directly, searching for "machine learning", and looking for an RSS icon in the browser (or append <code>&amp;format=rss</code> to the search URL). Update the <code>FEEDS</code> array with the working URL.</p>
+
+<p><strong>Jobs not appearing</strong>: Check the Apps Script execution log (<em>View &gt; Executions</em>) for error messages. The most common cause is that the "Job Board" sheet doesn't exist or is spelled differently — the script looks for an exact match.</p>
+
+<p><strong>Trigger not firing</strong>: Go to <em>Extensions &gt; Apps Script &gt; Triggers</em> (clock icon, left sidebar). You should see a time-based trigger for <code>updateJobs</code>. If missing, run <code>setupTrigger()</code> again.</p>
+
+<hr>
+<p style="font-size:0.85em; color:#666">ML/CS Academic Job Market Auto-Tracker · plainform · MIT License · github.com/plainform/ml-academic-job-tracker</p>
+</body>
+</html>
